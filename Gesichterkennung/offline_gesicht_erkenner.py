@@ -98,7 +98,6 @@ def findEncodings(images): # Eine Funktion, die die Gesichtskodierungen für ein
 # Die Gesichtskodierungen für alle Bilder werden berechnet und in der Liste encodeListKnown gespeichert
 encodeListKnown = findEncodings(images)
 print('Gesichter von Json Format zur Bilde erfolgreich generiert !')
-face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml") # Klassifikator für Gesichtserkennung
 class VideoCapture(qtc.QThread):
     change_pixmap_signal = qtc.pyqtSignal(np.ndarray) # Signal für Pixmap-Änderung
     def __init__(self):
@@ -114,7 +113,6 @@ class VideoCapture(qtc.QThread):
             imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25) # Verkleinern des Bildes
             rgbSkale = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB) # Konvertierung des Bildes von BGR in RGB
             if self.recognize_face  is True: # Überprüfung, ob Gesichtserkennung aktiviert ist
-                cvfaces = face_cascade.detectMultiScale(rgbSkale, 1.3, 22)   # Gesichtserkennung durch Ausführen der Haar-Cascade-Klassifikator auf dem Bild
                 facesCurFrame = gesicht_tracker(rgbSkale) # Verfolgen von Gesichtern durch den Algorithmus des optischen Flusses
                 encodesCurFrame = gesicht_encoder(rgbSkale, facesCurFrame) # Codieren von Gesichtern in einer Liste der Merkmalsvektoren
                 for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame): # Schleife über die Merkmalsvektoren und Gesichtspositionen
