@@ -1,4 +1,4 @@
-# offline-gesichterkennung
+# Offline-Gesichterkennung
 Der Code ist für die Offline-Gesichtserkennung implementiert, bei der Daten aus JSON-Dateien gelesen, in Bilder umgewandelt und die Erkennung am aktuellen Frame durchgeführt wird.
 
 Der Code definiert mehrere Funktionen zum Codieren von Gesichtsmerkmalen und zum Berechnen des Abstands zwischen Gesichtscodierungen. Es initialisiert dann eine leere Liste für Bilder und ihre entsprechenden Namen und liest JSON-Dateien ein, die Gesichtsdaten enthalten. Das Skript konvertiert das Numpy-Array aus jeder JSON-Datei in ein Bild und fügt es der Liste der Bilder zusammen mit seinem entsprechenden Namen hinzu. Das Skript verwendet dann die Gesichts-Codierungsfunktion, um die Gesichts-Codierungen für alle Bilder zu berechnen und speichert sie in einer Liste.
