@@ -7,10 +7,9 @@ Der Code initialisiert dann ein Videoaufnahmeobjekt und liest Frames von der Kam
 
 folge die Installationsschritte 
 mit command Prumpet erstelle eine virtuelle envirement und installiere alle requirements
-      *envirement erstellen:      python -m venv gesichterkennung
 
-      *envirement aktivieren: 	   .\gesichterkennung\Scripts\activate     
-
+      *envirement erstellen:  python -m venv gesichterkennung
+      *envirement aktivieren: .\gesichterkennung\Scripts\activate     
       *direkt nach dem aktivieren den verzeichnen "Gesichterkennung" im envirement einfügen
         --lade die datei "shape_predictor_68_face_landmarks.dat"  --> https://www.kaggle.com/datasets/sergiovirahonda/shape-predictor-68-face-landmarksdat
         --füge sie nachher mit aktuellen Modelle unter \offline-gesichterkennung\Gesichterkennung\models
