@@ -87,7 +87,7 @@ for cl in myList: # Eine Schleife, um durch jede JSON-Datei zu gehen und ein Bil
     img = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
     images.append(img) # Das Bild wird gespeichert und in der Liste images hinzugefügt
     classNames.append(os.path.splitext(cl)[0]) # Die Klassenbezeichnung wird aus dem Dateinamen extrahiert und der Liste Namen hinzugefügt
-print("Gesichter im Database ",classNames)
+print("Gesichter in Datenbank ",classNames)
 def findEncodings(images): # Eine Funktion, die die Gesichtskodierungen für eine Liste von Bildern zurückgibt
     encodeList = []
     for img in images:
@@ -98,6 +98,7 @@ def findEncodings(images): # Eine Funktion, die die Gesichtskodierungen für ein
 # Die Gesichtskodierungen für alle Bilder werden berechnet und in der Liste encodeListKnown gespeichert
 encodeListKnown = findEncodings(images)
 print('Gesichter von Json Format zur Bilde erfolgreich generiert !')
+#face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml") # Klassifikator für Gesichtserkennung
 class VideoCapture(qtc.QThread):
     change_pixmap_signal = qtc.pyqtSignal(np.ndarray) # Signal für Pixmap-Änderung
     def __init__(self):
@@ -113,6 +114,7 @@ class VideoCapture(qtc.QThread):
             imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25) # Verkleinern des Bildes
             rgbSkale = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB) # Konvertierung des Bildes von BGR in RGB
             if self.recognize_face  is True: # Überprüfung, ob Gesichtserkennung aktiviert ist
+                #cvfaces = face_cascade.detectMultiScale(rgbSkale, 1.3, 22)   # Gesichtserkennung durch Ausführen der Haar-Cascade-Klassifikator auf dem Bild
                 facesCurFrame = gesicht_tracker(rgbSkale) # Verfolgen von Gesichtern durch den Algorithmus des optischen Flusses
                 encodesCurFrame = gesicht_encoder(rgbSkale, facesCurFrame) # Codieren von Gesichtern in einer Liste der Merkmalsvektoren
                 for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame): # Schleife über die Merkmalsvektoren und Gesichtspositionen
@@ -129,11 +131,11 @@ class VideoCapture(qtc.QThread):
                         print("Gesicht ist nicht zu erkennen !")
                         cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)                        
             if self.save_face is True: # Überprüfung, ob das Gesicht gespeichert werden soll
-                detectedface = cv2.resize(img, (800, 400), interpolation=cv2.INTER_CUBIC) # Vergrößern des erkannten Gesichts
+                detectedface = cv2.resize(img, (100, 100), interpolation=cv2.INTER_CUBIC) # Vergrößern des erkannten Gesichts
                 img_np = np.array(detectedface) # Konvertierung des Gesichts in ein Numpy-Array
                 img_json = json.dumps(img_np.tolist()) # Konvertierung des Numpy-Arrays in JSON
                 with open(f"{path}/{self.input}.json", 'w') as f: # Speichern des Gesichts als JSON-Datei
-                    f.write(img_json)    
+                    f.write(img_json)   
                 self.save_face = False  # Setzen des save_face-Flag auf False 
             if success == True: # Falls das aktuelle Frame erfolgreich ausgelesen wurde
                 self.change_pixmap_signal.emit(img) # Signal für Pixmap-Änderung auslösen
@@ -165,8 +167,8 @@ class mainWindow(qtw.QWidget): # Definition der Hauptfenster-Klasse, die von QWi
         header_layout.setAlignment(qtc.Qt.AlignHCenter) # Setzt die Ausrichtung des Headers auf die Mitte
         header_label = qtw.QLabel('<h2>Offline Gesichtserkennung</h2>') # Legt das Label für den Header-Text fest
         header_label.setAlignment(qtc.Qt.AlignHCenter) # Setzt die Ausrichtung des Header-Texts auf die Mitte
-        self.cameraButton = qtw.QPushButton('Open Camera', clicked=self.cameraButtonClick, checkable=True) # Legt den Kamera-Button fest
-        self.saveFaceButton = qtw.QPushButton('Save Face', clicked=self.saveFaceButtonClick)# Legt den Speicher-Button fest
+        self.cameraButton = qtw.QPushButton('Kamera an', clicked=self.cameraButtonClick, checkable=True) # Legt den Kamera-Button fest
+        self.saveFaceButton = qtw.QPushButton('Gesicht speichern', clicked=self.saveFaceButtonClick)# Legt den Speicher-Button fest
         self.recognizeFaceButton = qtw.QPushButton('Gesicht erkennen', clicked=self.recognizeFaceButtonClick) # Legt den Erkennungs-Button fest
         name_label = qtw.QLabel("Name Eingeben:") # Legt das Label für den Namen fest
         self.name_input = qtw.QLineEdit() # Legt das Eingabefeld für den Namen fest
@@ -187,25 +189,24 @@ class mainWindow(qtw.QWidget): # Definition der Hauptfenster-Klasse, die von QWi
         self.setLayout(layout)
         self.show() #zeigt das Hauptfenster (mainWindow) an. Es ist eine Methode aus der Klasse "QWidget" und stellt das Fenster auf dem Bildschirm dar.
     def cameraButtonClick(self):
-        print('clicked')
         status = self.cameraButton.isChecked()
         if status == True:
-            self.cameraButton.setText('Close Camera') # Setze den Text des Buttons auf "Close Camera"
+            self.cameraButton.setText('Kamera aus') # Setze den Text des Buttons auf "Close Camera"
             self.capture = VideoCapture() # Initialisiere die Kamera
             self.capture.change_pixmap_signal.connect(self.updateImage) # Verbinde das change_pixmap_Signal mit updateImage
             self.capture.start()  # Starte die Kamera
         elif status == False:
-            self.cameraButton.setText('Open Camera') # Setze den Text des Buttons auf "Open Camera"
+            self.cameraButton.setText('Kamera an') # Setze den Text des Buttons auf "Open Camera"
             self.capture.stop() # Kamera stoppen
     def saveFaceButtonClick(self):
-        print('Save Face button clicked')
+        print('Gesicht speichern button clicked')
         name = self.name_input.text() # Get the name entered by the user
         if name: # Check if a name is entered
             self.capture.addface(name)  # Pass the name to the addface method
         else:
-            qtw.QMessageBox.warning(self, 'Warning', 'Please enter a name') # Show a warning message if no name is entered
+            qtw.QMessageBox.warning(self, 'Warnung', 'Bitte gebe einen Name zur Gesicht ein') # Show a warning message if no name is entered
     def recognizeFaceButtonClick(self):
-        print('Recognize Face button clicked')
+        print('Gesicht Recognizer button clicked')
         self.capture.recognizeface()
     @qtc.pyqtSlot(np.ndarray) #decorator wird verwendet, um anzuzeigen, dass die Funktion als Slot in PyQt5 verwendet werden kann, einem Satz von Python-Bindungen für die Qt-Bibliotheken.
     def updateImage(self, image_array):
