@@ -131,12 +131,15 @@ class VideoCapture(qtc.QThread):
                         print("Gesicht ist nicht zu erkennen !")
                         cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)                        
             if self.save_face is True: # Überprüfung, ob das Gesicht gespeichert werden soll
-                detectedface = cv2.resize(img, (100, 100), interpolation=cv2.INTER_CUBIC) # Vergrößern des erkannten Gesichts
+                print('Gesicht Aufzeichner angeschaltet')
+                detectedface = cv2.resize(img, (800, 600), interpolation=cv2.INTER_CUBIC) # Vergrößern des erkannten Gesichts
                 img_np = np.array(detectedface) # Konvertierung des Gesichts in ein Numpy-Array
                 img_json = json.dumps(img_np.tolist()) # Konvertierung des Numpy-Arrays in JSON
                 with open(f"{path}/{self.input}.json", 'w') as f: # Speichern des Gesichts als JSON-Datei
                     f.write(img_json)   
-                self.save_face = False  # Setzen des save_face-Flag auf False 
+                print(self.input,' ist in die Datenbank eingetragen') 
+                self.save_face = False  # Setzen des save_face-Flag auf False
+                print('Gesicht erfolgreich addiert, Aufzeichner ausgeschaltet') 
             if success == True: # Falls das aktuelle Frame erfolgreich ausgelesen wurde
                 self.change_pixmap_signal.emit(img) # Signal für Pixmap-Änderung auslösen
         cap.release() # Video-Aufnahme beenden
@@ -149,9 +152,11 @@ class VideoCapture(qtc.QThread):
         self.input = name
     def recognizeface(self):
         if self.recognize_face is False: 
-            self.recognize_face = True  
+            self.recognize_face = True
+            print('Gesicht Recognizer angeschaltet !')  
         else: 
-            self.recognize_face = False                    
+            self.recognize_face = False
+            print('Gesicht Recognizer ausgeschaltet !')                    
 class mainWindow(qtw.QWidget): # Definition der Hauptfenster-Klasse, die von QWidget abgeleitet wird
     def __init__(self):
         super().__init__() # Ruft den Konstruktor der übergeordneten Klasse auf
@@ -195,18 +200,18 @@ class mainWindow(qtw.QWidget): # Definition der Hauptfenster-Klasse, die von QWi
             self.capture = VideoCapture() # Initialisiere die Kamera
             self.capture.change_pixmap_signal.connect(self.updateImage) # Verbinde das change_pixmap_Signal mit updateImage
             self.capture.start()  # Starte die Kamera
+            print("Aufzeichner angeschaltet")
         elif status == False:
             self.cameraButton.setText('Kamera an') # Setze den Text des Buttons auf "Open Camera"
             self.capture.stop() # Kamera stoppen
+            print("Aufzeichner angehalten")
     def saveFaceButtonClick(self):
-        print('Gesicht speichern button clicked')
         name = self.name_input.text() # Get the name entered by the user
         if name: # Check if a name is entered
             self.capture.addface(name)  # Pass the name to the addface method
         else:
             qtw.QMessageBox.warning(self, 'Warnung', 'Bitte gebe einen Name zur Gesicht ein') # Show a warning message if no name is entered
     def recognizeFaceButtonClick(self):
-        print('Gesicht Recognizer button clicked')
         self.capture.recognizeface()
     @qtc.pyqtSlot(np.ndarray) #decorator wird verwendet, um anzuzeigen, dass die Funktion als Slot in PyQt5 verwendet werden kann, einem Satz von Python-Bindungen für die Qt-Bibliotheken.
     def updateImage(self, image_array):
